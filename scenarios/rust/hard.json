@@ -1,0 +1,49 @@
+{
+    "description": "WASM build failure due to getrandom entropy conflicts between v0.2 and v0.3. Fix order: (1) Add 'js' feature to getrandom 0.2. (2) Update wasm-bindgen to '^0.2.98'. (3) Add getrandom_backend rustflag to .cargo/config.toml. (4) The FINAL fix: uuid pulls in getrandom v0.3 as a transitive dep without wasm_js. You CANNOT use [patch.crates-io] — use a Cargo package alias: add a line like `getrandom-wasm3 = { package = \"getrandom\", version = \"0.3\", features = [\"wasm_js\"] }` to force the feature via aliasing.",
+    "difficulty": "hard",
+    "initial_files": {
+        "Cargo.toml": "[dependencies]\ngetrandom = { version = \"0.2\" }\nwasm-bindgen = \"=0.2.92\"",
+        ".cargo/config.toml": ""
+    },
+    "initial_log": "error: target `wasm32-unknown-unknown` is not supported by default, you may need to enable the \"js\" feature",
+    "solution_criteria": {
+        "checks": [
+            {
+                "file": "Cargo.toml",
+                "contains": "features = [\"js\"]",
+                "points": 0.15,
+                "error_msg": "error: getrandom 0.2 missing js feature"
+            },
+            {
+                "file": "Cargo.toml",
+                "contains": "^0.2.98",
+                "points": 0.15,
+                "error_msg": "error: wasm-bindgen exact dependency conflict.",
+                "requires": {
+                    "file": "Cargo.toml",
+                    "contains": "features = [\"js\"]"
+                }
+            },
+            {
+                "file": ".cargo/config.toml",
+                "contains": "getrandom_backend",
+                "points": 0.30,
+                "error_msg": "error: .cargo/config.toml missing rustflag getrandom_backend=\"wasm_js\".",
+                "requires": {
+                    "file": "Cargo.toml",
+                    "contains": "^0.2.98"
+                }
+            },
+            {
+                "file": "Cargo.toml",
+                "contains": "getrandom-wasm3",
+                "points": 0.40,
+                "error_msg": "error: uuid pulling in getrandom 0.3 without wasm_js feature alias — use a Cargo package alias e.g. `getrandom-wasm3 = { package = \"getrandom\", version = \"0.3\", features = [\"wasm_js\"] }` in [dependencies]",
+                "requires": {
+                    "file": ".cargo/config.toml",
+                    "contains": "getrandom_backend"
+                }
+            }
+        ]
+    }
+}

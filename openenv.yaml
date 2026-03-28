@@ -1,0 +1,76 @@
+name: "DockForgeEnv"
+description: "A DevOps/CI debugging environment where an AI agent resolves actual Docker and build errors from the DockForge project. Covers Java (Spring Boot / Maven) and Rust (WASM / Cargo) domains."
+author: "DockForge Team"
+version: "1.1.0"
+
+models:
+  action: "env.state:Action"
+  observation: "env.state:Observation"
+  reward: "env.state:Reward"
+
+environment:
+  entrypoint: "env.env:DockForgeEnv"
+
+tasks:
+  - id: java_easy
+    difficulty: easy
+    max_steps: 10
+    deterministic: true
+    domains: [java, docker]
+    grader_version: "1.1"
+    expected_baseline_score: 0.7
+    description: "Fix deprecated Docker base images in a Java multi-stage build."
+
+  - id: java_medium
+    difficulty: medium
+    max_steps: 10
+    deterministic: true
+    domains: [java, spring, docker]
+    grader_version: "1.1"
+    expected_baseline_score: 0.4
+    description: "Fix UnknownHostException by switching Spring profile from postgres to local."
+
+  - id: java_hard
+    difficulty: hard
+    max_steps: 15
+    deterministic: true
+    domains: [java, spring, docker, node]
+    grader_version: "1.1"
+    expected_baseline_score: 0.15
+    description: "Fix cascading failures: dead base images + wrong Spring profile + multi-file coordination."
+
+  - id: rust_easy
+    difficulty: easy
+    max_steps: 10
+    deterministic: true
+    domains: [rust, docker]
+    grader_version: "1.1"
+    expected_baseline_score: 0.7
+    description: "Fix invalid rust:nightly Docker tag and install nightly toolchain manually."
+
+  - id: rust_medium
+    difficulty: medium
+    max_steps: 10
+    deterministic: true
+    domains: [rust, docker, bash]
+    grader_version: "1.1"
+    expected_baseline_score: 0.35
+    description: "Fix Docker build context path and binary output location in deployment script."
+
+  - id: rust_hard
+    difficulty: hard
+    max_steps: 15
+    deterministic: true
+    domains: [rust, wasm, cargo]
+    grader_version: "1.1"
+    expected_baseline_score: 0.2
+    description: "Resolve transitive getrandom 0.2/0.3 entropy conflict with cargo features and rustflags."
+
+  - id: rust_extra_hard
+    difficulty: extra_hard
+    max_steps: 15
+    deterministic: true
+    domains: [rust, wasm, cargo, docker]
+    grader_version: "1.1"
+    expected_baseline_score: 0.1
+    description: "The Full WASM Cascade: fix deploy.sh context + getrandom + wasm-bindgen + rustflags + transitive deps."

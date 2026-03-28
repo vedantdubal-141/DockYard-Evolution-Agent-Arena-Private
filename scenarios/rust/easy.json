@@ -1,0 +1,33 @@
+{
+    "id": "rust_easy",
+    "difficulty": "easy",
+    "max_steps": 10,
+    "deterministic": true,
+    "domains": ["rust", "docker"],
+    "expected_baseline_score": 0.7,
+    "description": "The Rust Dashboard Dockerfile uses 'rust:nightly' as its base image, but this tag does NOT exist on Docker Hub. The official 'rust' image only provides stable version tags. You must change the base image to a valid stable tag like 'rust:1.75-slim-bookworm' and then install the nightly toolchain manually using 'rustup default nightly'. Also add the WASM target with 'rustup target add wasm32-unknown-unknown'. Then run_build=True to verify.",
+    "initial_files": {
+        "rust_dashboard_app.Dockerfile": "FROM rust:nightly AS builder\nWORKDIR /app\nCOPY . .\nRUN cargo build --release"
+    },
+    "initial_log": "ERROR: failed to pull manifest for docker.io/library/rust:nightly: docker.io/library/rust:nightly: not found\n\nThe 'rust:nightly' image tag does not exist on Docker Hub.\nAvailable tags include: rust:latest, rust:1.75, rust:1.75-slim-bookworm, etc.",
+    "solution_criteria": {
+        "checks": [
+            {
+                "file": "rust_dashboard_app.Dockerfile",
+                "contains": "rust:1.75-slim-bookworm",
+                "points": 0.5,
+                "error_msg": "ERROR: failed to pull manifest for docker.io/library/rust:nightly: not found. Use a valid stable tag like rust:1.75-slim-bookworm."
+            },
+            {
+                "file": "rust_dashboard_app.Dockerfile",
+                "contains": "wasm32-unknown-unknown",
+                "points": 0.5,
+                "error_msg": "error: target `wasm32-unknown-unknown` not found. Did you install it using rustup?",
+                "requires": {
+                    "file": "rust_dashboard_app.Dockerfile",
+                    "contains": "rust:1.75-slim-bookworm"
+                }
+            }
+        ]
+    }
+}

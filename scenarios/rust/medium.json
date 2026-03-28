@@ -1,0 +1,38 @@
+{
+    "description": "Our Rust Dashboard deployment script is failing. The build context is too large because .dockerignore is missing 'target/'. Fix the binary path in 'rust_dashboard_app.Dockerfile', ensure 'scripts/deploy.sh' forces no-cache and uses $BASE_DIR as context, and add 'target/' to .dockerignore.",
+    "difficulty": "medium",
+    "initial_files": {
+        "scripts/deploy.sh": "docker build -t rust-dashboard-debug -f \"$DOCKERFILE\" . 2>&1 | tee \"$LOG_FILE\"",
+        "rust_dashboard_app.Dockerfile": "FROM rust:1.75-slim-bookworm AS builder\nCOPY --from=builder /app/target/server/release/dashboard-app /app/",
+        ".dockerignore": "node_modules\n.git"
+    },
+    "initial_log": "ERROR: failed to compute cache key: '/app/target/server/release/dashboard-app': not found",
+    "solution_criteria": {
+        "checks": [
+            {
+                "file": "scripts/deploy.sh",
+                "contains": "--no-cache",
+                "points": 0.25,
+                "error_msg": "ERROR: Docker build using old cache."
+            },
+            {
+                "file": "scripts/deploy.sh",
+                "contains": "\"$BASE_DIR\"",
+                "points": 0.25,
+                "error_msg": "ERROR: Docker build failing context."
+            },
+            {
+                "file": "rust_dashboard_app.Dockerfile",
+                "contains": "target/release/dashboard-app",
+                "points": 0.25,
+                "error_msg": "ERROR: Target binary target/server/release/dashboard-app not found in builder layer."
+            },
+            {
+                "file": ".dockerignore",
+                "contains": "target/",
+                "points": 0.25,
+                "error_msg": "ERROR: Build context is massive, caching stalled. Did you ignore target/?"
+            }
+        ]
+    }
+}

@@ -1,0 +1,37 @@
+{
+    "id": "java_medium",
+    "difficulty": "medium",
+    "max_steps": 10,
+    "deterministic": true,
+    "domains": ["java", "spring", "docker"],
+    "expected_baseline_score": 0.4,
+    "description": "The Java AtSea Shop container starts but immediately crashes with 'UnknownHostException: database'. The Dockerfile CMD sets '--spring.profiles.active=postgres', which expects a PostgreSQL sidecar container named 'database' on the network. In standalone docker run mode, this DNS name doesn't resolve. Fix the Dockerfile CMD to use the 'local' profile (H2 in-memory database) instead. Also check application.yml to make sure the local profile datasource is configured for H2, and importantly, ensure that pom.xml contains the H2 dependency with <scope>runtime</scope> so the driver loads successfully.",
+    "initial_files": {
+        "Dockerfile": "FROM eclipse-temurin:8-jre-alpine\nWORKDIR /app\nCOPY target/*.jar app.jar\nEXPOSE 8080\nCMD [\"java\", \"-jar\", \"app.jar\", \"--spring.profiles.active=postgres\"]",
+        "application.yml": "spring:\n  profiles:\n    active: postgres\n\n---\nspring:\n  profiles: postgres\n  datasource:\n    url: jdbc:postgresql://database:5432/atsea\n    username: gordonuser\n    password: gordonpass\n\n---\nspring:\n  profiles: local\n  datasource:\n    url: jdbc:h2:mem:testdb\n    driver-class-name: org.h2.Driver",
+        "pom.xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project>\n  <modelVersion>4.0.0</modelVersion>\n  <groupId>com.docker.atseashop</groupId>\n  <artifactId>atseashop-api</artifactId>\n  <version>0.0.1-SNAPSHOT</version>\n  <dependencies>\n    <dependency>\n      <groupId>org.springframework.boot</groupId>\n      <artifactId>spring-boot-starter-data-jpa</artifactId>\n    </dependency>\n    <dependency>\n      <groupId>com.h2database</groupId>\n      <artifactId>h2</artifactId>\n    </dependency>\n  </dependencies>\n</project>"
+    },
+    "initial_log": "2026-04-03 10:15:33.456 ERROR 1 --- [main] o.s.boot.SpringApplication : Application startup failed\norg.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory'\n...\nCaused by: org.postgresql.util.PSQLException: The connection attempt failed.\nCaused by: java.net.UnknownHostException: database",
+    "solution_criteria": {
+        "checks": [
+            {
+                "file": "Dockerfile",
+                "contains": "spring.profiles.active=local",
+                "points": 0.4,
+                "error_msg": "ERROR 1 --- [main] o.s.boot.SpringApplication : Application startup failed\nCaused by: java.net.UnknownHostException: database\nHint: The 'postgres' profile requires a sidecar container named 'database'. Switch to the 'local' profile for standalone mode."
+            },
+            {
+                "file": "application.yml",
+                "contains": "jdbc:h2:mem",
+                "points": 0.3,
+                "error_msg": "WARNING: Local profile datasource should use H2 in-memory database (jdbc:h2:mem:testdb)."
+            },
+            {
+                "file": "pom.xml",
+                "contains": "<scope>runtime</scope>",
+                "points": 0.3,
+                "error_msg": "ERROR: H2 database driver not found in context. Add scope 'runtime' to the h2 dependency in pom.xml to fix container crash."
+            }
+        ]
+    }
+}

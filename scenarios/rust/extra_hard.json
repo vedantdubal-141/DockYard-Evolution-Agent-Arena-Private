@@ -1,0 +1,66 @@
+{
+    "id": "rust_extra_hard",
+    "difficulty": "extra_hard",
+    "max_steps": 15,
+    "deterministic": true,
+    "domains": ["rust", "docker"],
+    "expected_baseline_score": 0.35,
+    "description": "The Full WASM Cascade. Fix in order: (1) FIRST fix `scripts/deploy.sh` — the build context is wrong: replace the trailing `.` with `\"$BASE_DIR\"` so Docker reads from the right directory. (2) Add 'js' feature to getrandom 0.2 in Cargo.toml. (3) Update wasm-bindgen to '^0.2.98'. (4) Add `getrandom_backend` rustflag to `.cargo/config.toml`. (5) FINAL fix: uuid pulls in getrandom v0.3 as a transitive dep — use a Cargo package alias: `getrandom-wasm3 = { package = \"getrandom\", version = \"0.3\", features = [\"wasm_js\"] }`. Do NOT use [patch.crates-io].",
+    "initial_files": {
+        "scripts/deploy.sh": "docker build -t rust-dashboard-debug -f \"$DOCKERFILE\" . 2>&1 | tee \"$LOG_FILE\"",
+        "Cargo.toml": "[dependencies]\ngetrandom = { version = \"0.2\" }\nwasm-bindgen = \"=0.2.92\"",
+        ".cargo/config.toml": "",
+        "rust_dashboard_app.Dockerfile": "FROM rust:1.75-slim-bookworm AS builder\nWORKDIR /app\nCOPY --from=builder /app/target/server/release/dashboard-app /app/\nCMD [\"/app/dashboard-app\"]"
+    },
+    "initial_log": "ERROR: failed to compute cache key: '/app/target/server/release/dashboard-app': not found\nSending build context to Docker daemon  2B",
+    "solution_criteria": {
+        "checks": [
+            {
+                "file": "scripts/deploy.sh",
+                "contains": "BASE_DIR",
+                "points": 0.15,
+                "error_msg": "ERROR: Docker build failing context."
+            },
+            {
+                "file": "Cargo.toml",
+                "contains": "features = [\"js\"]",
+                "points": 0.1,
+                "error_msg": "error: target wasm32-unknown-unknown not supported\n   = help: enable the 'js' feature for getrandom",
+                "requires": {
+                    "file": "scripts/deploy.sh",
+                    "contains": "BASE_DIR"
+                }
+            },
+            {
+                "file": "Cargo.toml",
+                "contains": "^0.2.98",
+                "points": 0.15,
+                "error_msg": "error: failed to select a version for wasm-bindgen\n   = required by getrandom v0.3.0 -> requires ^0.2.98",
+                "requires": {
+                    "file": "Cargo.toml",
+                    "contains": "features = [\"js\"]"
+                }
+            },
+            {
+                "file": ".cargo/config.toml",
+                "contains": "getrandom_backend",
+                "points": 0.20,
+                "error_msg": "error: The wasm_js backend requires --cfg getrandom_backend=wasm_js",
+                "requires": {
+                    "file": "Cargo.toml",
+                    "contains": "^0.2.98"
+                }
+            },
+            {
+                "file": "Cargo.toml",
+                "contains": "getrandom-wasm3",
+                "points": 0.40,
+                "error_msg": "error: uuid pulling in getrandom 0.3 without wasm_js feature alias",
+                "requires": {
+                    "file": ".cargo/config.toml",
+                    "contains": "getrandom_backend"
+                }
+            }
+        ]
+    }
+}

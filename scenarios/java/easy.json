@@ -1,0 +1,29 @@
+{
+    "description": "Our Java App is failing to build. The docker base images are ancient and removed from Docker Hub. Look at 'app/atsea-shop.Dockerfile', identify the 'node', 'maven', and 'java' images, and replace them with standard base images compatible with Java 8 / Maven 3.9 / Node 16. Then run_build=True to check your work.",
+    "initial_files": {
+        "app/atsea-shop.Dockerfile": "FROM node:latest AS storefront\n\nFROM maven:3.6-eclipse-temurin-8 AS appserver\n\nFROM java:8-jdk-alpine AS runtime"
+    },
+    "initial_log": "ERROR: failed to pull manifest for docker.io/library/java:8-jdk-alpine: not found",
+    "solution_criteria": {
+        "checks": [
+            {
+                "file": "app/atsea-shop.Dockerfile",
+                "contains": "node:16-alpine",
+                "points": 0.3,
+                "error_msg": "Node image should be node:16-alpine to fix openssl."
+            },
+            {
+                "file": "app/atsea-shop.Dockerfile",
+                "contains": "maven:3.9-eclipse-temurin-8",
+                "points": 0.3,
+                "error_msg": "Maven image needs 3.9 to support eclipse-temurin-8."
+            },
+            {
+                "file": "app/atsea-shop.Dockerfile",
+                "contains": "eclipse-temurin:8-jre-alpine",
+                "points": 0.4,
+                "error_msg": "java:8-jdk-alpine is dead. Need a modern alternative like eclipse-temurin:8-jre-alpine."
+            }
+        ]
+    }
+}

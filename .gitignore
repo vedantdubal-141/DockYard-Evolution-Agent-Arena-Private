@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+.venv/
+venv/
+ENV/
+env/__pycache__/
+env/domains/__pycache__/
+
+# IDE
+.vscode/
+.vs/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project specific
+node_modules/
+inference_output.txt
+*.log
+
+# Docker
+dockforge/app/
+dockforge/dockerfiles/
+dockforge/scripts/
+dockforge/docs/
+dockforge/LICENSE
+dockforge/README.md
+dockforge/config/
+dockforge/generate_git_history.sh
+
+# Don't track the neo folder (experimental logs)
+neo/
+
+# gemini experimental folder
+gemini/

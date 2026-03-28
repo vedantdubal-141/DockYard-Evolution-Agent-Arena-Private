@@ -1,0 +1,49 @@
+{
+    "id": "java_hard",
+    "difficulty": "hard",
+    "max_steps": 15,
+    "deterministic": true,
+    "domains": ["java", "spring", "docker", "node"],
+    "expected_baseline_score": 0.15,
+    "description": "The Java AtSea Shop has MULTIPLE cascading failures. The multi-stage Dockerfile has dead base images (java:8-jdk-alpine removed from Docker Hub, maven:3.6-eclipse-temurin-8 doesn't exist, node:latest breaks OpenSSL) AND the runtime CMD uses the 'postgres' profile which crashes with UnknownHostException in standalone mode. You must: (1) Fix ALL three base images to compatible versions, (2) Switch the CMD to use the 'local' Spring profile, and (3) Ensure application.yml has a valid local profile with H2. This requires editing 3 separate concerns across 2 files simultaneously.",
+    "initial_files": {
+        "app/atsea-shop.Dockerfile": "# Stage 1: Frontend\nFROM node:latest AS storefront\nWORKDIR /usr/src/atsea/app/react-app\nCOPY react-app .\nRUN npm install && npm run build\n\n# Stage 2: App Server\nFROM maven:3.6-eclipse-temurin-8 AS appserver\nWORKDIR /usr/src/atsea\nCOPY pom.xml .\nRUN mvn -B -f pom.xml -s /usr/share/maven/ref/settings-docker.xml dependency:resolve\nCOPY . .\nRUN mvn -B -s /usr/share/maven/ref/settings-docker.xml package -DskipTests\n\n# Stage 3: Runtime\nFROM java:8-jdk-alpine\nWORKDIR /app\nCOPY --from=appserver /usr/src/atsea/target/*.jar app.jar\nEXPOSE 8080\nCMD [\"java\", \"-jar\", \"app.jar\", \"--spring.profiles.active=postgres\"]",
+        "application.yml": "spring:\n  profiles:\n    active: postgres\n\n---\nspring:\n  profiles: postgres\n  datasource:\n    url: jdbc:postgresql://database:5432/atsea\n    username: gordonuser\n    password: gordonpass\n\n---\nspring:\n  profiles: local\n  datasource:\n    url: jdbc:h2:mem:testdb\n    driver-class-name: org.h2.Driver"
+    },
+    "initial_log": "ERROR: failed to build: failed to solve: maven:3.6-eclipse-temurin-8: failed to resolve source metadata for docker.io/library/maven:3.6-eclipse-temurin-8: not found\n\nPreviously failed with: docker.io/library/java:8-jdk-alpine: not found\nNote: node:latest (Node 20+) will break the React frontend due to OpenSSL legacy provider changes.",
+    "solution_criteria": {
+        "checks": [
+            {
+                "file": "app/atsea-shop.Dockerfile",
+                "contains": "node:16-alpine",
+                "points": 0.15,
+                "error_msg": "ERROR: React build failed. node:latest uses Node 20+ which breaks OpenSSL for legacy React apps. Use node:16-alpine."
+            },
+            {
+                "file": "app/atsea-shop.Dockerfile",
+                "contains": "maven:3.9-eclipse-temurin-8",
+                "points": 0.15,
+                "error_msg": "ERROR: failed to resolve source metadata for maven:3.6-eclipse-temurin-8. The eclipse-temurin variant started at 3.8+. Use maven:3.9-eclipse-temurin-8."
+            },
+            {
+                "file": "app/atsea-shop.Dockerfile",
+                "contains": "eclipse-temurin:8-jre-alpine",
+                "points": 0.2,
+                "error_msg": "ERROR: java:8-jdk-alpine was removed from Docker Hub in 2022. Use eclipse-temurin:8-jre-alpine as the runtime base."
+            },
+            {
+                "file": "app/atsea-shop.Dockerfile",
+                "contains": "spring.profiles.active=local",
+                "points": 0.3,
+                "requires": {"file": "app/atsea-shop.Dockerfile", "contains": "eclipse-temurin:8-jre-alpine"},
+                "error_msg": "ERROR 1 --- [main] Application startup failed: UnknownHostException: database. The postgres profile requires a sidecar. Switch CMD to --spring.profiles.active=local."
+            },
+            {
+                "file": "application.yml",
+                "contains": "jdbc:h2:mem",
+                "points": 0.2,
+                "error_msg": "WARNING: Local profile datasource must be configured for H2 in-memory database."
+            }
+        ]
+    }
+}
