@@ -1,3 +1,25 @@
+---
+title: DockForge OpenEnv
+emoji: 🐳
+colorFrom: blue
+colorTo: purple
+sdk: docker
+sdk_version: "4.15.0"
+python_version: "3.11"
+app_file: runner/server.py
+pinned: false
+tags:
+- openenv
+- docker
+- devops
+- rust
+- java
+- hackathon
+- agent
+- llm-evaluation
+short_description: AI agent env for Docker/build config debugging
+---
+
 # DockForge OpenEnv: DevOps Debugging Environment
 
 A real-world AI agent environment where LLMs must debug broken Docker and build configurations. Submitted to the Meta PyTorch OpenEnv Hackathon.
