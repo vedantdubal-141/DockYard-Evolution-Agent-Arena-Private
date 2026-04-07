@@ -17,7 +17,7 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from env.env import DockForgeEnv
+from env.engine import DockForgeEnv
 from env.state import Action
 
 

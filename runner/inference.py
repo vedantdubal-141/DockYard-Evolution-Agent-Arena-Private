@@ -2,7 +2,7 @@ import os
 import sys
 import json
 from openai import OpenAI
-from env.env import DockForgeEnv
+from env.engine import DockForgeEnv
 from env.state import Action
 
 def main():

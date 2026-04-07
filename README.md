@@ -7,6 +7,7 @@ sdk: docker
 sdk_version: "4.15.0"
 python_version: "3.11"
 app_file: runner/server.py
+app_port: 7860
 pinned: false
 tags:
 - openenv
@@ -43,7 +44,7 @@ DockForge OpenEnv simulates genuine DevOps debugging scenarios that the develope
 debugging/
 |
 |-- env/                        # Core environment engine
-|   |-- env.py                  # step() / reset() / state() orchestrator
+|   |-- engine.py               # step() / reset() / state() orchestrator
 |   |-- state.py                # Typed Observation, Action, Reward models
 |   |-- reward.py               # Partial reward calculator with penalties
 |   |-- actions.py              # Sandbox validation for file edits

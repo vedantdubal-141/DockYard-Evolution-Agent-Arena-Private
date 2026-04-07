@@ -9,7 +9,7 @@ models:
   reward: "env.state:Reward"
 
 environment:
-  entrypoint: "env.env:DockForgeEnv"
+  entrypoint: "env.engine:DockForgeEnv"
 
 tasks:
   - id: java_easy

@@ -7,7 +7,7 @@ import asyncio
 from typing import Optional
 
 from fastapi import FastAPI, HTTPException
-from env.env import DockForgeEnv
+from env.engine import DockForgeEnv
 from env.state import Action
 
 app = FastAPI(title="DockForge OpenEnv", version="1.1.0")
