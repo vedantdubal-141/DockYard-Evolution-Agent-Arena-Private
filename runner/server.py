@@ -47,35 +47,56 @@ async def new_session():
 
 
 @app.post("/reset")
-async def reset(task_id: Optional[int] = None, session_id: Optional[str] = None):
+async def reset(payload: Optional[dict] = None, task_id: Optional[int] = None, session_id: Optional[str] = None):
     """
     Reset the environment to a task.
-    - If session_id is provided, resets that session.
-    - If no session_id, uses a default shared session (single-client safe).
+    Supports task_id as query param or in JSON body (payload).
     """
+    # Extract task_id from payload if not provided in URL
+    if task_id is None and payload and "task_id" in payload:
+        try:
+            task_id = int(payload["task_id"])
+        except (ValueError, TypeError):
+            task_id = None
+
+    # Extract session_id from payload if not provided in URL
+    if session_id is None and payload and "session_id" in payload:
+        session_id = payload["session_id"]
+
     async with _lock:
         if session_id:
-            env = _get_session(session_id)
+            # If session_id provided, always create/recreate it for a clean state
+            _sessions[session_id] = DockForgeEnv()
+            env = _sessions[session_id]
         else:
-            # Backward-compatible: auto-create a default session
+            # Fallback for single-client/grader: use default session
             if "__default__" not in _sessions:
                 _sessions["__default__"] = DockForgeEnv()
             env = _sessions["__default__"]
+        
         obs = env.reset(task_id)
+    
+    # Return Observation as top-level JSON
     return obs.model_dump()
 
 
 @app.post("/step")
-async def step(action: Action, session_id: Optional[str] = None):
+async def step(action: Action, payload: Optional[dict] = None, session_id: Optional[str] = None):
     """Apply an action and return the next observation, reward, done, and info."""
+    if session_id is None and payload and "session_id" in payload:
+        session_id = payload["session_id"]
+
     async with _lock:
         if session_id:
             env = _get_session(session_id)
         else:
             if "__default__" not in _sessions:
-                raise HTTPException(status_code=400, detail="No active session. Call /reset first.")
+                # If no session yet, auto-create it (resets to task 0)
+                _sessions["__default__"] = DockForgeEnv()
             env = _sessions["__default__"]
+        
         obs, reward, done, info = env.step(action)
+    
     return {
         "observation": obs.model_dump(),
         "reward": reward.model_dump(),
@@ -85,14 +106,17 @@ async def step(action: Action, session_id: Optional[str] = None):
 
 
 @app.get("/state")
-async def state(session_id: Optional[str] = None):
+async def state(payload: Optional[dict] = None, session_id: Optional[str] = None):
     """Return the current observation without advancing the environment."""
+    if session_id is None and payload and "session_id" in payload:
+        session_id = payload["session_id"]
+
     async with _lock:
         if session_id:
             env = _get_session(session_id)
         else:
             if "__default__" not in _sessions:
-                raise HTTPException(status_code=400, detail="No active session. Call /reset first.")
+                 _sessions["__default__"] = DockForgeEnv()
             env = _sessions["__default__"]
         return env.state().model_dump()
 
