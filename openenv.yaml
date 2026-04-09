@@ -10,6 +10,7 @@ models:
 
 environment:
   entrypoint: "env.engine:DockForgeEnv"
+  server: "server.app:main"
 
 tasks:
   - id: java_easy
