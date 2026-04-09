@@ -19,7 +19,7 @@
                 "file": "scripts/deploy.sh",
                 "contains": "BASE_DIR",
                 "points": 0.15,
-                "error_msg": "ERROR: Docker build failing context."
+                "error_msg": "ERROR: deploy.sh is not using $BASE_DIR as build context. Fix scripts/deploy.sh first."
             },
             {
                 "file": "Cargo.toml",
