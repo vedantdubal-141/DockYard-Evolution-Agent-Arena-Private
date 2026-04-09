@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dockforge-openenv"
+version = "1.1.0"
+description = "A DevOps/CI debugging environment for AI agents"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+    { name = "DockForge Team" }
+]
+dependencies = [
+    "pydantic>=2.0.0",
+    "fastapi>=0.100.0",
+    "uvicorn>=0.20.0",
+    "openai>=1.0.0",
+    "requests>=2.31.0"
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0"
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["env*", "runner*"]
