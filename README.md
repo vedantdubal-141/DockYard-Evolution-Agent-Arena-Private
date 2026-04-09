@@ -6,7 +6,7 @@ colorTo: purple
 sdk: docker
 sdk_version: "4.15.0"
 python_version: "3.11"
-app_file: runner/server.py
+app_file: server/app.py
 app_port: 7860
 pinned: false
 tags:
@@ -65,8 +65,9 @@ debugging/
 |       |-- hard.json           # getrandom 0.2/0.3 WASM conflict
 |       |-- extra_hard.json     # Full WASM cascade (5-step gating)
 |
+|-- server/
+|   |-- app.py                  # FastAPI for Hugging Face Spaces
 |-- runner/
-|   |-- server.py               # FastAPI for Hugging Face Spaces
 |   |-- run_env.py              # Interactive human playtest
 |
 |-- agents/                     # Baseline test agents
