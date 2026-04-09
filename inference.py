@@ -259,7 +259,7 @@ def main():
                 # Prevent fallbacks from artificially boosting scores
                 step_reward_val = reward.score
                 if "fallback" in action_str:
-                    step_reward_val = 0.0
+                    step_reward_val = 0.001
                     done = False
 
                 steps_taken = step
@@ -289,7 +289,11 @@ def main():
 
         finally:
             # ── Episode end — always emitted even on exception ───────────────
-            score   = max(rewards) if rewards else 0.0
+            score   = max(rewards) if rewards else 0.001
+            score   = max(0.001, min(0.999, score))
+            rewards = [max(0.001, min(0.999, r)) for r in rewards]
+            if not rewards:
+                rewards = [0.001]
             success = score >= SUCCESS_SCORE_THRESHOLD
             log_end(success=success, steps=steps_taken, score=score, rewards=rewards, metrics=metrics)
             
