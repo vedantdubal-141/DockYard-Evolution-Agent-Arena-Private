@@ -23,9 +23,13 @@ from env.state import Action
 
 
 # ── Credentials & model config ──────────────────────────────────────────────
-API_KEY    = os.getenv("HF_TOKEN") or os.getenv("OPENAI_API_KEY", "lm-studio")
 API_BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:1234/v1")
 MODEL_NAME   = os.getenv("MODEL_NAME",   "qwen3-4b-2507")
+HF_TOKEN     = os.getenv("HF_TOKEN")
+
+# Optional - if you use from_docker_image():
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
+
 BENCHMARK    = "dockforge"
 MAX_STEPS    = 10
 SUCCESS_SCORE_THRESHOLD = 0.6  # score >= this → success=true
@@ -119,7 +123,8 @@ class Metrics:
 
 
 def main():
-    client      = OpenAI(api_key=API_KEY, base_url=API_BASE_URL)
+    # HF_TOKEN is used as the API key per hackathon instructions
+    client      = OpenAI(api_key=HF_TOKEN, base_url=API_BASE_URL)
     environment = DockForgeEnv()
     total_tasks = len(environment.scenario_files)
 
