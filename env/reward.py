@@ -29,7 +29,7 @@ def calculate_reward(
         content = state_files.get(file_path, "")
         if content is None:
             content = ""
-        if required_snippet not in content:
+        if required_snippet is None or required_snippet not in content:
             continue
 
         # Order-dependent gating: does this check have a prerequisite?

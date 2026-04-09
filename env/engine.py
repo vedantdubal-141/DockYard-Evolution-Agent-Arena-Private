@@ -285,6 +285,7 @@ class DockForgeEnv:
         if not action.run_build:
             feedback = f"File edited (no build). Partial reward: {reward_score:.3f}"
 
+        reward_score = max(0.001, min(0.999, reward_score))
         self.state_data["reward"] = reward_score
         # Snapshot files for next destructive-action comparison
         self.previous_files = copy.deepcopy(self.state_data["files"])

@@ -36,9 +36,9 @@
             },
             {
                 "file": "Cargo.toml",
-                "contains": "getrandom-wasm3",
+                "contains": "wasm_js",
                 "points": 0.40,
-                "error_msg": "error: uuid pulling in getrandom 0.3 without wasm_js feature alias — use a Cargo package alias e.g. `getrandom-wasm3 = { package = \"getrandom\", version = \"0.3\", features = [\"wasm_js\"] }` in [dependencies]",
+                "error_msg": "error: uuid pulling in getrandom 0.3 without wasm_js feature alias \u2014 use a Cargo package alias e.g. `getrandom-wasm3 = { package = \"getrandom\", version = \"0.3\", features = [\"wasm_js\"] }` in [dependencies]",
                 "requires": {
                     "file": ".cargo/config.toml",
                     "contains": "getrandom_backend"
