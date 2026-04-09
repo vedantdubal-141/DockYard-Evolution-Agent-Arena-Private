@@ -57,3 +57,5 @@ neo/
 
 # gemini experimental folder
 gemini/
+
+rewrite_history.py
