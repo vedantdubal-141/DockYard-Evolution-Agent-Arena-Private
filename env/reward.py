@@ -73,4 +73,5 @@ def calculate_reward(
             if was_passing and now_failing:
                 score = max(0.0, score - 0.15)
 
-    return min(1.0, score)
+    score = max(0.001, min(0.999, score))
+    return score
