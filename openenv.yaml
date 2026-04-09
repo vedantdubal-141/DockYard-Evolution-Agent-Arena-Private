@@ -75,3 +75,13 @@ tasks:
     grader_version: "1.1"
     expected_baseline_score: 0.1
     description: "The Full WASM Cascade: fix deploy.sh context + getrandom + wasm-bindgen + rustflags + transitive deps."
+
+  - id: agent_meta_broken_inference
+    difficulty: extra_hard
+    max_steps: 10
+    deterministic: true
+    domains: [python, meta]
+    grader_version: "1.1"
+    expected_baseline_score: 0.05
+    description: "Meta-scenario: The agent inference script `inference.py` itself is broken. Fix 3 bugs: amnesia (history overwritten), stateless loop (ignores done), and broken fallback."
+

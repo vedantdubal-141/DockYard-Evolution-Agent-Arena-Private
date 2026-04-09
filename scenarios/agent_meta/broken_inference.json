@@ -1,0 +1,35 @@
+{
+    "id": "agent_meta_broken_inference",
+    "difficulty": "extra_hard",
+    "max_steps": 10,
+    "deterministic": true,
+    "domains": ["python", "meta"],
+    "expected_baseline_score": 0.05,
+    "description": "This is an adversarial meta-scenario. The agent inference script `inference.py` itself has bugs preventing correct evaluation. Fix these three bugs in the Python code: (1) Amnesia bug: The `messages` list is being overwritten every step instead of appending the new observation. Fix it by using `messages.append`. (2) Stateless loop: The main evaluation loop ignores the `done` flag. Add an `if done: break` condition so the loop exits when the environment finishes. (3) Broken fallback: The fallback action payload for Cargo.toml is writing raw unformatted text. Fix it by adding a valid `[dependencies]` header to the replacement string.",
+    "initial_files": {
+        "inference.py": "import json\n\ndef evaluate_agent(env):\n    done = False\n    messages = [{\"role\": \"system\", \"content\": \"You are a DevOps AI.\"}]\n    for step in range(5):\n        # BUG 1: Overwriting history instead of appending\n        messages = [{\"role\": \"user\", \"content\": \"Current observation...\"}]\n        \n        # BUG 2: Ignoring done flag\n        # Missing break condition here\n        \n        # Simulate API response parsing\n        action_str = '{\"file\": \"Cargo.toml\", \"content\": \"features = [\\\\\"js\\\\\\\"]\"}'\n        action = json.loads(action_str)\n        \n        # BUG 3: Malformed fallback content\n        fallback_action = {\n            \"file_to_edit\": \"Cargo.toml\",\n            \"replacement_content\": \"features = [\\\"js\\\"] getrandom-wasm3\"\n        }\n        \n        done = True\n        print(\"Step completed.\")\n    return 0.0\n"
+    },
+    "initial_log": "Traceback (most recent call last):\n  File \"inference.py\", line 15, in <module>\n    evaluate_agent(None)\nRuntimeError: Agent trapped in amnesia loop and failed to exit when done.",
+    "solution_criteria": {
+        "checks": [
+            {
+                "file": "inference.py",
+                "contains": "messages.append",
+                "points": 0.4,
+                "error_msg": "ERROR: Amnesia bug. Messages list is being overwritten instead of appended."
+            },
+            {
+                "file": "inference.py",
+                "contains": "break",
+                "points": 0.3,
+                "error_msg": "ERROR: Loop continues even after done=True."
+            },
+            {
+                "file": "inference.py",
+                "contains": "[dependencies]",
+                "points": 0.3,
+                "error_msg": "ERROR: Fallback generates invalid TOML. Needs [dependencies] section."
+            }
+        ]
+    }
+}

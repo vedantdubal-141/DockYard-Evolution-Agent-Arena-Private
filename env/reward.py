@@ -73,5 +73,22 @@ def calculate_reward(
             if was_passing and now_failing:
                 score = max(0.0, score - 0.15)
 
+    # --- Regression checks ---
+    regression_checks = criteria.get("regression_checks", [])
+    regression_penalty = 0.0
+    for check in regression_checks:
+        file_path = check.get("file")
+        must_contain = check.get("must_contain")
+        penalty = check.get("penalty", 0.2)
+        
+        content = state_files.get(file_path, "")
+        if content is None:
+            content = ""
+            
+        if must_contain and must_contain not in content:
+            regression_penalty += penalty
+            
+    score = max(0.0, score - regression_penalty)
+
     score = max(0.001, min(0.999, score))
     return score

@@ -11,7 +11,8 @@
         "application.yml": "spring:\n  profiles:\n    active: postgres\n\n---\nspring:\n  profiles: postgres\n  datasource:\n    url: jdbc:postgresql://database:5432/atsea\n    username: gordonuser\n    password: gordonpass\n\n---\nspring:\n  profiles: local\n  datasource:\n    url: jdbc:h2:mem:testdb\n    driver-class-name: org.h2.Driver",
         "pom.xml": "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project>\n  <modelVersion>4.0.0</modelVersion>\n  <groupId>com.docker.atseashop</groupId>\n  <artifactId>atseashop-api</artifactId>\n  <version>0.0.1-SNAPSHOT</version>\n  <dependencies>\n    <dependency>\n      <groupId>org.springframework.boot</groupId>\n      <artifactId>spring-boot-starter-data-jpa</artifactId>\n    </dependency>\n    <dependency>\n      <groupId>com.h2database</groupId>\n      <artifactId>h2</artifactId>\n    </dependency>\n  </dependencies>\n</project>"
     },
-    "initial_log": "2026-04-03 10:15:33.456 ERROR 1 --- [main] o.s.boot.SpringApplication : Application startup failed\norg.springframework.beans.factory.BeanCreationException: Error creating bean with name 'entityManagerFactory'\n...\nCaused by: org.postgresql.util.PSQLException: The connection attempt failed.\nCaused by: java.net.UnknownHostException: database",
+    "design_note": "Intentionally misleading log. Tests reasoning vs pattern matching.",
+    "initial_log": "node:internal/crypto/hash:71\n  this[kHandle] = new _Hash(algorithm, xofLen);\n  ^\nError: error:0308010C:digital envelope routines::unsupported\n    at new Hash (node:internal/crypto/hash:71:19)\n    at Object.createHash (node:crypto:133:10)\n    at module.exports (/usr/src/atsea/app/react-app/node_modules/webpack/lib/util/createHash.js:135:53)\n\nERR_OSSL_EVP_UNSUPPORTED - use node:16-alpine",
     "solution_criteria": {
         "checks": [
             {
@@ -31,6 +32,14 @@
                 "contains": "<scope>runtime</scope>",
                 "points": 0.3,
                 "error_msg": "ERROR: H2 database driver not found in context. Add scope 'runtime' to the h2 dependency in pom.xml to fix container crash."
+            }
+        ],
+        "regression_checks": [
+            {
+                "file": "Dockerfile",
+                "must_contain": "EXPOSE 8080",
+                "penalty": 0.2,
+                "error_msg": "REGRESSION: EXPOSE 8080 was removed from the Dockerfile."
             }
         ]
     }
