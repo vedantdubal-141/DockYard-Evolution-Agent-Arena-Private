@@ -65,16 +65,16 @@ def log_start(task: str, env: str, model: str) -> None:
 def log_step(step: int, action: str, reward: float, done: bool, error: Optional[str]) -> None:
     error_val = error if error else "null"
     done_val  = str(done).lower()
-    print(f"[STEP] step={step} action={action} reward={reward:.2f} done={done_val} error={error_val}", flush=True)
+    print(f"[STEP] step={step} action={action} reward={reward:.4f} done={done_val} error={error_val}", flush=True)
 
 def log_end(success: bool, steps: int, score: float, rewards: List[float], metrics: Optional['Metrics'] = None) -> None:
-    rewards_str = ",".join(f"{r:.2f}" for r in rewards)
+    rewards_str = ",".join(f"{r:.4f}" for r in rewards)
     metrics_str = ""
     if metrics:
         total = metrics.prompt_tokens + metrics.completion_tokens
         metrics_str = f" prompt_tokens={metrics.prompt_tokens} completion_tokens={metrics.completion_tokens} reasoning_tokens={metrics.reasoning_tokens} total_tokens={total}"
     
-    print(f"[END] success={str(success).lower()} steps={steps} score={score:.2f} rewards={rewards_str}{metrics_str}", flush=True)
+    print(f"[END] success={str(success).lower()} steps={steps} score={score:.4f} rewards={rewards_str}{metrics_str}", flush=True)
 
 # ── Task name helper ─────────────────────────────────────────────────────────
 def _task_name(scenario_path: str) -> str:
@@ -433,65 +433,6 @@ def _get_fallback_action(task_idx: int, step: int, env: DockForgeEnv) -> Optiona
         return None
 
     if "rust" in scenario_path and "hard" in scenario_path and "extra_hard" not in scenario_path:
-        if step == 0:
-            return Action(
-                file_to_edit="Cargo.toml",
-                replacement_content=(
-                    "[dependencies]\n"
-                    'getrandom = { version = "0.2", features = ["js"] }\n'
-                    'getrandom-wasm3 = { package = "getrandom", version = "0.3", features = ["wasm_js"] }\n'
-                    'wasm-bindgen = "^0.2.98"'
-                ),
-                run_build=False,
-            )
-        elif step == 1:
-            return Action(
-                file_to_edit=".cargo/config.toml",
-                replacement_content=(
-                    "[target.wasm32-unknown-unknown]\n"
-                    'rustflags = ["--cfg", "getrandom_backend=\\"wasm_js\\""]\n'
-                ),
-                run_build=True,
-            )
-        return None
-
-    if "rust" in scenario_path and "extra_hard" in scenario_path:
-        if step == 0:
-            return Action(
-                file_to_edit="scripts/deploy.sh",
-                replacement_content=(
-                    'docker build --no-cache -t rust-dashboard-debug -f "$DOCKERFILE" "$BASE_DIR" 2>&1 | tee "$LOG_FILE"'
-                ),
-                run_build=True,
-            )
-        elif step == 1:
-            return Action(
-                file_to_edit="Cargo.toml",
-                replacement_content=(
-                    "[dependencies]\n"
-                    'getrandom = { version = "0.2", features = ["js"] }\n'
-                    'getrandom-wasm3 = { package = "getrandom", version = "0.3", features = ["wasm_js"] }\n'
-                    'wasm-bindgen = "^0.2.98"'
-                ),
-                run_build=False,
-            )
-        elif step == 2:
-            return Action(
-                file_to_edit=".cargo/config.toml",
-                replacement_content=(
-                    "[target.wasm32-unknown-unknown]\n"
-                    'rustflags = ["--cfg", "getrandom_backend=\\"wasm_js\\""]\n'
-                ),
-                run_build=True,
-            )
-        return None
-
-    return None
-
-
-if __name__ == "__main__":
-    main()
-o_path:
         if step == 0:
             return Action(
                 file_to_edit="Cargo.toml",
