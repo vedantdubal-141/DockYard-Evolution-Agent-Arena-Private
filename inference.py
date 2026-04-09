@@ -292,7 +292,45 @@ def main():
             score   = max(rewards) if rewards else 0.0
             success = score >= SUCCESS_SCORE_THRESHOLD
             log_end(success=success, steps=steps_taken, score=score, rewards=rewards, metrics=metrics)
+            
+            diff_str = "Unknown"
+            if "(" in task_name and ")" in task_name:
+                diff_str = task_name.split("(")[1].split(")")[0].split("_")[-1].capitalize()
+            
+            global_results.append({
+                "task_id": task_name.split(" ")[0],
+                "diff": diff_str,
+                "steps": steps_taken,
+                "score": score,
+                "success": success
+            })
+            global_total_tokens += metrics.prompt_tokens + metrics.completion_tokens
 
+    print("\n╔══════════════════════════════════════════════════════════════════════╗")
+    print("║                   DockForge Evaluation Complete                      ║")
+    print("╠═══════╦══════════════════════╦═══════╦════════╦════════════════════╣")
+    print("║ Task  ║ Type                 ║ Steps ║ Score  ║ Status             ║")
+    print("╠═══════╬══════════════════════╬═══════╬════════╬════════════════════╣")
+    avg_score = 0.0
+    if global_results:
+        for r in global_results:
+            task_id = r['task_id']
+            # Determine type based on our outlier definitions
+            if "medium" in task_id and "java" in task_id:
+                type_str = "Outlier (The Lie)"
+            elif "agent_meta" in task_id:
+                type_str = "Outlier (Adversarial)"
+            elif "extra_hard" in task_id and "rust" in task_id:
+                type_str = "Normal (Extra Hard)"
+            else:
+                type_str = "Normal"
+                
+            status = "✅ SOLVED" if r["success"] else ("🔴 FAILED" if r["score"] < 0.01 else "🟡 PARTIAL")
+            print(f"║ {r['task_id']:<5} ║ {type_str:<20} ║ {r['steps']:>5} ║  {r['score']:>4.2f}  ║ {status:<18} ║")
+        avg_score = sum(r["score"] for r in global_results) / len(global_results)
+    print("╠═══════╩══════════════════════╩═══════╩════════╩════════════════════╣")
+    print(f"║ AVERAGE SCORE: {avg_score:.2f}    TOTAL TOKENS: {global_total_tokens:<18}         ║")
+    print("╚══════════════════════════════════════════════════════════════════════╝")
 
 def _get_fallback_action(task_idx: int, step: int, env: DockForgeEnv) -> Optional[Action]:
     """Deterministic baseline fallback — guarantees reproducibility when LLM unavailable."""

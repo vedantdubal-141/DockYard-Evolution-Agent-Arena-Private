@@ -136,15 +136,18 @@ This made the 35B A3B the "Gold Standard" for our evaluation pipeline.
 
 ## Task Overview
 
-| Task | Difficulty | Domain | Core Problem | Expected Score (35B) |
-|------|------------|--------|--------------|---------------------|
-| J-1 Easy | Easy | Java/Docker | Dead base images (java:8, maven:3.6) | 0.99 |
-| J-2 Medium | Medium | Java/Spring | Wrong Spring profile + missing H2 scope | 0.99 |
-| J-3 Hard | Hard | Java/Docker/Node | Cascading: base images + profile + multi-file | 0.99 |
-| R-1 Easy | Easy | Rust/Docker | Invalid rust:nightly tag | 0.99 |
-| R-2 Medium | Medium | Rust/Docker | Wrong binary path + missing .dockerignore | 0.98 |
-| R-3 Hard | Hard | Rust/WASM | getrandom 0.2/0.3 transitive conflict | 0.99 |
-| R-4 Extra Hard | Extra Hard | Rust/WASM/Docker | Full cascade: context + WASM + deps | 0.00-0.50 |
+We have 8 scenarios. Five test standard DevOps debugging, while three **"Showstopper"** scenarios test meta-reasoning and robustness.
+
+| Task | Type | Domain | Core Problem | Description |
+|------|------|--------|--------------|-------------|
+| J-1 Easy | Normal | Java/Docker | Dead base images (java:8, maven:3.6) | Standard base image upgrade. |
+| J-2 Medium | **Outlier (The Lie)** | Java/Spring | Wrong Spring profile + missing H2 scope | The log intentionally lies (fake OpenSSL hash error) to test if the model actually reads the configs or just pattern-matches logs. Also includes a hidden regression test verifying `EXPOSE 8080` isn't deleted. |
+| J-3 Hard | Normal | Java/Docker/Node | Cascading: base images + profile + multi-file | Full multi-stage build failure cascade. |
+| R-1 Easy | Normal | Rust/Docker | Invalid rust:nightly tag | Missing toolchain installation. |
+| R-2 Medium | Normal | Rust/Docker | Wrong binary path + missing .dockerignore | Docker context and stage resolution. |
+| R-3 Hard | Normal | Rust/WASM | getrandom 0.2/0.3 transitive conflict | Strict cargo feature and rustflags configuration. |
+| R-4 Extra Hard | Normal | Rust/WASM/Docker | Full cascade: context + WASM + deps | Requires 5 files edited in strict dependency order. |
+| M-1 Meta | **Outlier (Adversarial)** | Python/Meta | Broken `inference.py` | The agent must debug the evaluation script itself (fixes Amnesia bug, stateless loop, and broken JSON fallback). Tests meta-reasoning. |
 
 ### Order-Dependent Gating
 
@@ -259,7 +262,11 @@ The script outputs strict STDOUT format required by the hackathon:
 
 3. **Multi-Action Support**: The environment handles cases where capable models apply multiple file edits in a single step.
 
-4. **Session Isolation**: Thread-safe server architecture prevents state corruption during concurrent judge evaluations.
+4. **"The Adversarial Agent" Scenario**: An `extra_hard` meta-scenario where the AI is given a broken `inference.py` script and must fix the bugs (Amnesia, Stateless Loops, etc) that evaluate agents.
+
+5. **"The Lie" Scenario**: To combat pure instruction-following models, `java/medium.json` throws a completely fake Webpack/OpenSSL crypto hash error to hide the real Spring Boot profile bug. The agent must read configs, not just paste errors.
+
+6. **Hidden Regression Testing**: Our environment grader performs hidden checks after a successful solve to ensure the agent didn't use a "lazy rewrite" strategy that deleted critical infrastructure (like `EXPOSE 8080`), punishing regressions dynamically.
 
 ---
 
